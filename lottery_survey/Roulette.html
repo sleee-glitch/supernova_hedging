@@ -1,0 +1,121 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+    Roulette For Additional Earning
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-12">
+            <h2>Round Selection</h2>
+            <div id="roundSelector" style="font-size: 48px; text-align: center; margin: 20px 0;">1</div>
+            <hr>
+            <h3>Selected Round Details:</h3>
+            <ul id="roundDetails" style="display: none;">
+                <li>Selected round: <span id="selectedRound">{{ selected_round }}</span></li>
+                <li>Probability (p): {{ p }}</li>
+                <li>Lottery 1: With probability {{ p }}, you get {{ x1_l }}, and with probability {{ one_minus_p }}, you get {{ x1_h }}.</li>
+                <li>Lottery 2: With probability {{ p }}, you get {{ x2_h }}, and with probability {{ one_minus_p }}, you get {{ x2_l }}.</li>
+                <li>Your allocation in the Lottery: {{ alpha }}</li>
+            </ul>
+            <hr>
+            <h3 id="resultHeader" style="display: none;"></h3>
+            <h2 class="text-center" id="expectedValue" style="display: none;"></h2>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-12 text-center">
+            <h4 class="text-danger">Please raise your hand now and wait for the experimenter.</h4>
+
+            <input type="text" id="validationInput" class="form-control w-25 mx-auto mb-3" >
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-12 text-center">
+        {% next_button %}
+    </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+    function animateRoundSelection() {
+        const totalRounds = {{ Constants.num_rounds }};
+        const selectedRound = {{ selected_round }};
+        let currentRound = 1;
+        const roundSelector = document.getElementById('roundSelector');
+        const roundDetails = document.getElementById('roundDetails');
+        const resultHeader = document.getElementById('resultHeader');
+        const expectedValue = document.getElementById('expectedValue');
+
+        // Calculate the expected value
+        const p = {{ p }};
+        const x1_l = {{ x1_l }};
+        const x1_h = {{ x1_h }};
+        const x2_l = {{ x2_l }};
+        const x2_h = {{ x2_h }};
+        const alpha = {{ alpha }};
+
+        const lottery1 = (p*0.01) * x1_l + (100 - p)*0.01 * x1_h;
+        const lottery2 = (p*0.01) * x2_h + (100 - p)*0.01 * x2_l;
+        const totalExpectedValue = alpha * lottery1 + (1 - alpha) * lottery2;
+
+        function updateRound() {
+            if (currentRound <= totalRounds) {
+                roundSelector.textContent = currentRound;
+                currentRound++;
+                setTimeout(updateRound, 50);
+            } else {
+                setTimeout(() => {
+                    roundSelector.textContent = selectedRound;
+                    roundDetails.style.display = 'block';
+                    resultHeader.style.display = 'block';
+                    expectedValue.style.display = 'block';
+
+                    if (totalExpectedValue > 0) {
+                        resultHeader.textContent = "Congratulations! Your additional earnings are:";
+                    } else if (totalExpectedValue < 0) {
+                        resultHeader.textContent = "Unfortunately, you have incurred a loss. Your earnings change:";
+                    } else {
+                        resultHeader.textContent = "Your earnings remain unchanged:";
+                    }
+
+                    expectedValue.textContent = "$" + totalExpectedValue.toFixed(2);
+                }, 500);  // Wait 500ms before showing the final result
+            }
+        }
+
+        updateRound();
+    }
+
+    // Start the animation when the page loads
+    window.onload = animateRoundSelection;
+
+        function validateInput() {
+        var input = document.getElementById('validationInput').value;
+        var nextButton = document.querySelector('.otree-btn-next');
+        if (input === '1') {
+            nextButton.disabled = false;
+        } else {
+            nextButton.disabled = true;
+        }
+    }
+
+    // Start the animation when the page loads
+    window.onload = function() {
+        animateRoundSelection();
+
+        // Disable the Next button initially
+        document.querySelector('.otree-btn-next').disabled = true;
+
+        // Add event listener to the input box
+        document.getElementById('validationInput').addEventListener('input', validateInput);
+    };
+</script>
+{% endblock %}

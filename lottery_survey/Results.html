@@ -1,0 +1,16 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+    Survey Complete
+{% endblock %}
+
+{% block content %}
+    <p>Thank you for completing the survey. Here are your choices for all rounds:</p>
+    <ul>
+    {% for p in player_in_all_rounds %}
+        <li>Round {{ forloop.counter }}: α = {{ p.alpha }}</li>
+    {% endfor %}
+    </ul>
+    {% next_button %}
+{% endblock %}

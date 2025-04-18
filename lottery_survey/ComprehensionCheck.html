@@ -1,0 +1,58 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+    Comprehension Check
+{% endblock title %}
+
+
+{% block content %}
+    {% if show_success %}
+        <div class="alert alert-success mt-4">
+            <h4>Congratulations!</h4>
+            <p>You have passed the comprehension check. Click "Next" to proceed to the actual rounds.</p>
+        </div>
+        <form method="post">
+            <button type="submit" class="btn btn-primary">Next</button>
+        </form>
+    {% else %}
+        <form method="post">
+            <div class="question mb-4">
+
+                <p><strong>1. If you allocate $0.8 to Investment 1, how much goes to Investment 2?</strong></p>
+                {{ form.question_1 }}
+                {% if form.question_1.errors %}
+                    <div class="alert alert-danger mt-2">
+                        {{ form.question_1.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="question mb-4">
+                <p><strong>2. Which statement best describes the relationship between Investment 1 and Investment 2?</strong></p>
+                {{ form.question_2 }}
+                {% if form.question_2.errors %}
+                    <div class="alert alert-danger mt-2">
+                        {{ form.question_2.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+
+
+            <div class="question mb-4">
+                <p><strong>3. Which of the following statements is true? </strong></p>
+                {{ form.question_3 }}
+                {% if form.question_3.errors %}
+                    <div class="alert alert-danger mt-2">
+                        {{ form.question_3.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+
+
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    {% endif %}
+{% endblock content %}

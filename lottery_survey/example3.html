@@ -1,0 +1,25 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+Practice Round
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <ul style="font-size: 1.25rem; line-height: 1.5;">
+<li>We’ll begin with a practice round to familiarize you with the interface and decision-making process.</li>
+<li>These rounds won’t affect your final results or earnings.</li>
+<li>Feel free to explore and ask questions.</li>
+<li>Click "Next" to start the practice rounds when you're ready.</li>
+
+            </ul>
+
+    {% next_button %}
+</div>
+
+{% endblock %}
+
+

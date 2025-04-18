@@ -1,0 +1,43 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+{% block title %}
+    Example 2: Two Possibilities
+{% endblock %}
+{% block content %}
+<div class="container">
+    <!-- Initial instructions -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-12">
+<ul style="font-size: 1.25rem; line-height: 1.5;">
+<li> There are two possibilities: Possibility A and Possibility B.</li>
+<ul>
+    <li> Only one possibility will occur for each investment decision.</li>
+    <li> The possibility is determined after you make your investment choice.</li>
+    <li> Each possibility has a fixed chances of occurring.</li>
+    <li> While you cannot predict which possibility will occur, you do know their chances of each occurring.</li>
+</ul>
+<li>These probabilities remain constant within each round but may change from one round to the next.</li>
+
+<li> In the example below: </li>
+
+             <div class="col-md-7 text-center">
+            <img src="{% static 'images/probability.png' %}"
+                 alt="Probability Chart"
+                 class="img-fluid"
+                 style="max-height: 400px;">
+        </div>
+                <ul>
+
+                    <li>Possibility A occurs 80 out of 100 cases.</li>
+                    <li>Possibility B occurs 20 out of 100 cases.</li>
+                </ul>
+        </ul>
+    </li>
+    </div>
+</div>
+        <div class="row mt-4">
+        <div class="col-md-12">
+            {% next_button %}
+        </div>
+    </div>
+{% endblock %}

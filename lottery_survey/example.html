@@ -1,0 +1,93 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+    Example 1: Two Investment Options
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Initial instructions -->
+
+<ul style="font-size: 1.25rem; line-height: 1.5;">
+
+
+    <li> There are two investment options: <strong>Investment 1</strong> and <strong>Investment 2 </strong>.</li>
+<li> In each possibility, the returns of these investments move in opposite directions. </li>
+
+<div style="border: 2px solid black; padding: 10px; margin-top: 10px; border-radius: 5px;">
+
+<div class="col-md-7 text-center">
+    <img src="{% static 'images/investments.png' %}"
+         alt="Probability Chart"
+         class="img-fluid"
+         style="max-width: 150%; height: auto; max-height: 400px;">
+</div>
+
+<!-- Boxed Example -->
+
+    <ul>
+        >> For example,
+        <li>In Possibility A, Investment 1 results in -3, while Investment 2 yields 5.</li>
+        <li>In Possibility B, Investment 1 provides a return of 2, while Investment 2 yields -5.</li>
+    </ul>
+</div>
+
+            <div class="row mt-4">
+        <div class="col-md-12">
+            {% next_button %}
+        </div>
+    </div>
+</div>
+
+
+
+
+<script>
+function updateAlphaFromSlider(value) {
+    // Reverse the value (1 - value) to make slider work in opposite direction
+    const reversedValue = (1 - parseFloat(value) + 0.01).toFixed(2);
+    // Update the form control input with the reversed value
+    document.getElementById('alpha_input').value = reversedValue;
+    // Update the hidden input
+    document.getElementById('id_alpha').value = reversedValue;
+}
+
+function validateAlpha() {
+    const input = document.getElementById('alpha_input');
+    const value = parseFloat(input.value);
+    const errorMessage = document.getElementById('error_message');
+
+    if (isNaN(value) || value < 0.01 || value > 1) {
+        errorMessage.textContent = 'Please enter a value between 0.01 and 1';
+        errorMessage.style.display = 'block';
+        return false;
+    }
+
+    errorMessage.style.display = 'none';
+    // Reverse the value for the slider
+    document.getElementById('alpha_slider').value = (1 - value + 0.01).toFixed(2);
+    document.getElementById('id_alpha').value = value;
+    return true;
+}
+
+// Initialize with a default value when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    const defaultValue = 0.5;
+    document.getElementById('alpha_slider').value = 1 - defaultValue + 0.01;
+    document.getElementById('alpha_input').value = defaultValue;
+    document.getElementById('id_alpha').value = defaultValue;
+});
+</script>
+
+<style>
+    canvas {
+        max-width: 20%;
+        height: auto !important;
+    }
+
+    .form-control {
+        width: 20%;
+    }
+</style>
+{% endblock %}

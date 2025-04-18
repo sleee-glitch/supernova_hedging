@@ -1,0 +1,17 @@
+{% extends "global/Page.html" %}
+{% block title %} Welcome to our study. {% endblock %}
+{% block content %}
+    <div class="container">
+        <ul style="font-size: 1.25rem; line-height: 1.5;">
+            <h4>Please read carefully.</h4>
+
+            <li>This study focuses on your <strong>preferences</strong>.</li>
+            <li>There are no right or wrong answers.</li>
+            <li> In each round, your goal is to allocate your money to invest between two investment options.</li>
+            <li> This study consists of 45 rounds.</li>
+            <li> At the end, one round will be randomly selected as the round that counts. </li>
+            <li>Since every round has an equal chance of being chosen, you should approach each task as if it is the <strong>round that counts</strong>.</li>
+        </ul>
+        {% next_button %}
+    </div>
+{% endblock %}

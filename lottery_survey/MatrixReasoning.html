@@ -1,0 +1,50 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+
+{% endblock %}
+
+{% block content %}
+
+<p>Please answer the following questions to the best of your ability. For each question, select the option that you think best completes the pattern.</p>
+
+<div class="mb-3">
+    {% formfield player.Matrix_B06 %}
+</div>
+
+<div class="mb-3">
+    {% formfield player.Matrix_B09 %}
+</div>
+
+<div class="mb-3">
+    {% formfield player.Matrix_B11 %}
+</div>
+
+<div class="mb-3">
+    {% formfield player.Matrix_C02 %}
+</div>
+
+<div class="mb-3">
+    {% formfield player.Matrix_C05 %}
+</div>
+
+<div class="mb-3">
+    {% formfield player.Matrix_C12 %}
+</div>
+
+<div class="mb-3">
+    {% formfield player.Matrix_D05 %}
+</div>
+
+<div class="mb-3">
+    {% formfield player.Matrix_D07 %}
+</div>
+
+<div class="mb-3">
+    {% formfield player.Matrix_E07 %}
+</div>
+
+{% next_button %}
+
+{% endblock %}
