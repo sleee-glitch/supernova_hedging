@@ -1,0 +1,356 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+    Bonus Round of 45
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-12">
+            <ul>         <p> Use the slider to choose how much to allocate to <strong>Investment 1</strong>; the rest will automatically go to <strong>Investment 2</strong>.</p>
+        <ul>
+             <li> Possibility A occurs <strong>{{ p }} </strong> out of <strong>100 </strong> cases: <strong> Investment 1  </strong> yields ${{ x1_l }}, while <strong> Investment 2</strong> yields ${{ x2_h }}.</li>
+             <li> Possibility B occurs <strong>{{ one_minus_p }}</strong> out of <strong>100</strong> cases: <strong> Investment 1 </strong> yields ${{ x1_h }}, while <strong> Investment 2 </strong> yields ${{ x2_l }}.</li>
+            </ul>
+        </div>
+    </div>
+<div style="border: 2px solid black; padding: 10px; margin-top: 10px; border-radius: 5px;">
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-3">
+      <div style="height: 250px; width: 100%;">
+
+
+        <canvas id="l1_graph"></canvas>
+      </div>
+    </div>
+    <div class="col-md-5">
+
+ <div class="d-flex flex-column justify-content-center mt-4">
+  <label for="alpha_slider"> <strong>Select the amount to allocate to Investment 1.</strong>  </label>
+<input type="range" min="0.01" max="1" step="0.01" id="alpha_slider" oninput="updateAlphaFromSlider(this.value)" style="width: 100%;" value="">
+  <div class="d-flex justify-content-between mt-2" style="font-size: 0.7em;">
+    <span>$1</span>
+    <span>$0.8</span>
+    <span>$0.6</span>
+    <span>$0.4</span>
+    <span>$0.2</span>
+    <span>$0.0</span>
+  </div>
+
+       <div class="mt-3">
+                    <label for="alpha_input"> Confirm your investment ($):</label>
+                    <input type="number"
+                           id="alpha_input"
+                           min="0.01"
+                           max="1"
+                           step="0.01"
+                           oninput="validateAlpha()"
+                           class="form-control">
+                </div>
+
+  <div id="error_message" class="text-danger mt-2" style="display: none;"></div>
+  <input type="hidden" name="alpha" id="id_alpha">
+</div>
+
+    </div>
+    <div class="col-md-3">
+      <div style="height: 250px; width: 100%;">
+        <canvas id="l2_graph"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+<style>
+  canvas {
+    max-width: 100%;
+    height: auto !important;
+  }
+</style>
+
+
+    <div class="row justify-content-center mt-4">
+      <div class="col-md-5">
+        <div style="height: 250px; width: 100%;">
+          <canvas id="probability_pie"></canvas>
+        </div>
+      </div>
+      <div class="col-md-5">
+        <div style="height: 250px; width: 100%;">
+          <canvas id="ev_graphs"></canvas>
+        </div>
+      </div>
+    </div>
+</div>
+<div class="row justify-content-left mt-4">
+    <div class="col-md-12 text-left">
+        {% next_button %}
+    </div>
+</div>
+
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+<script>
+    Chart.register(ChartDataLabels);
+    var softBlue = '#4682B4';
+    var mutedOrange = '#D2691E';
+
+
+function updateAlphaFromSlider(value) {
+    var reversedValue = (1.01 - parseFloat(value)).toFixed(2);
+    var roundedValue = Math.max(0.01, Math.min(1, parseFloat(reversedValue)));
+    document.getElementById('alpha_slider').value = value; // Keep original value for slider??
+    document.getElementById('id_alpha').value = roundedValue;
+    document.getElementById('alpha_input').value = roundedValue;
+    updateEVGraphs(roundedValue);
+    validateAlpha();
+}
+
+function validateAlpha() {
+    var sliderValue = parseFloat(document.getElementById('alpha_slider').value);
+    var reversedSliderValue = (1.01 - sliderValue).toFixed(2);
+    var inputValue = parseFloat(document.getElementById('alpha_input').value || 0);
+    var errorMessage = document.getElementById('error_message');
+    var nextButton = document.querySelector('.otree-btn-next');
+
+    if (isNaN(inputValue) || inputValue < 0.01 || inputValue > 1) {
+        showError("");
+        nextButton.disabled = true;
+        return false;
+    } else if (Math.abs(reversedSliderValue - inputValue) > 0.001) {
+        showError("The slider value and input value must match.");
+        nextButton.disabled = true;
+        return false;
+    } else {
+        errorMessage.style.display = 'none';
+        document.getElementById('id_alpha').value = inputValue.toFixed(2);
+        nextButton.disabled = false;
+        return true;
+    }
+}
+
+
+    var alphaSlider = document.getElementById('alpha_slider');
+    var alphaInput = document.getElementById('alpha_input');
+var hiddenAlphaInput = document.getElementById('id_alpha');
+alphaSlider.value = '';
+alphaInput.value = '';
+hiddenAlphaInput.value = '';
+hiddenAlphaInput.style.display = 'none';
+
+// Update the input listener to reverse the slider value
+document.addEventListener("DOMContentLoaded", function () {
+    var alphaSlider = document.getElementById('alpha_slider');
+    var alphaInput = document.getElementById('alpha_input');
+    var hiddenAlphaInput = document.getElementById('id_alpha');
+    var nextButton = document.querySelector('.otree-btn-next');
+
+    // Initially clear slider, input, and hidden field
+    alphaSlider.value = "";
+    alphaInput.value = "";
+    hiddenAlphaInput.value = "";
+    nextButton.disabled = true; // Disable next button initially
+
+    function updateAlphaFromSlider(value) {
+        if (value) { // Only update if user interacts
+            var reversedValue = (1.01 - parseFloat(value)).toFixed(2);
+            var roundedValue = Math.max(0.01, Math.min(1, parseFloat(reversedValue)));
+
+            document.getElementById('id_alpha').value = roundedValue;
+            document.getElementById('alpha_input').value = roundedValue;
+            updateEVGraphs(roundedValue);
+            validateAlpha();
+        }
+    }
+
+    function validateAlpha() {
+        var inputValue = parseFloat(alphaInput.value || 0);
+        if (!isNaN(inputValue) && inputValue >= 0.01 && inputValue <= 1) {
+            nextButton.disabled = false; // Enable Next button when valid input
+        } else {
+            nextButton.disabled = true;
+        }
+    }
+
+    alphaInput.addEventListener('input', validateAlpha);
+});
+
+
+
+
+    function showError(message) {
+        var errorMessage = document.getElementById('error_message');
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        document.querySelector('.otree-btn-next').disabled = true;
+    }
+
+
+    var alphaSlider = document.getElementById('alpha_slider');
+    var alphaInput = document.getElementById('alpha_input');
+    var hiddenAlphaInput = document.getElementById('id_alpha');
+    alphaSlider.value = 0.01;
+    alphaInput.value = '';
+    hiddenAlphaInput.value = 0.01;
+    hiddenAlphaInput.style.display = 'none';
+
+    function createChart(ctx, type, data, options) {
+        return new Chart(ctx, {
+            type: type,
+            data: data,
+            options: Object.assign({
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    datalabels: {
+                        color: '#000',
+                        font: {
+                            weight: 'bold'
+                        },
+                        formatter: function(value) {
+                            return parseFloat(value).toFixed(2);
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            callback: function(value, index) {
+                                return index === 0 ? 'Possibility A' : 'Possibility B';
+                            }
+                        }
+                    }
+                }
+            }, options)
+        });
+    }
+
+    var minValue = Math.min({{ x1_l }}, {{ x1_h }}, {{ x2_l }}, {{ x2_h }});
+    var maxValue = Math.max({{ x1_l }}, {{ x1_h }}+1, {{ x2_l }}, {{ x2_h }}+1);
+
+    var l1_chart = createChart(document.getElementById('l1_graph').getContext('2d'), 'bar', {
+        labels: ['Possibility A', 'Possibility B'],
+        datasets: [{
+            data: [{{ x1_l }}, {{ x1_h }}],
+            backgroundColor: [softBlue, mutedOrange],
+            barPercentage: 0.5,
+            categoryPercentage: 1.0
+        }]
+    }, {
+        plugins: {
+            title: { display: true, text: 'Investment 1' },
+            legend: { display: false, position: 'bottom' },
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+            }
+        },
+        scales: {
+            y: { min: minValue, max: maxValue }
+        }
+    });
+
+    var l2_chart = createChart(document.getElementById('l2_graph').getContext('2d'), 'bar', {
+        labels: ['Possibility A','Possibility B'],
+        datasets: [{
+            data: [{{ x2_h }}, {{ x2_l }}],
+            backgroundColor: [softBlue, mutedOrange],
+            barPercentage: 0.5,
+            categoryPercentage: 1.0
+        }]
+    }, {
+        plugins: {
+            title: { display: true, text: 'Investment 2' },
+            legend: { display: false, position: 'bottom' },
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+            }
+        },
+        scales: {
+            y: { min: minValue, max: maxValue }
+        }
+    });
+
+    var pie_chart = createChart(document.getElementById('probability_pie').getContext('2d'), 'pie', {
+   labels: ['Possibility B', 'Possibility A'],
+        datasets: [{
+            data: [ {{ one_minus_p }}, {{ p }}],
+            backgroundColor: [mutedOrange, softBlue],
+            borderWidth: 0
+        }]
+    }, {
+        plugins: {
+            title: { display: true, text: 'Likelihood of Possibilities' },
+            legend: { display: false, position: 'bottom' },
+            datalabels: {
+                color: '#fff',
+                font: {
+                    weight: 'bold'
+                },
+                formatter: function(value, context) {
+                    return context.chart.data.labels[context.dataIndex] + ': ' + parseFloat(value).toFixed(0);
+                }
+            }
+        }
+    });
+
+    var ev_chart = createChart(document.getElementById('ev_graphs').getContext('2d'), 'bar', {
+         labels: ['Possibility A', 'Possibility B'],
+        datasets: [{
+            data: [0, 0],
+            backgroundColor: [softBlue, mutedOrange],
+            barPercentage: 0.5,
+            categoryPercentage: 1.0
+        }]
+    }, {
+        plugins: {
+            title: { display: true, text: 'Potential Outcome Based on Your Choice' },
+            legend: { display: false, text: 'Potential Outcome Based on Your Choice' },
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+            }
+        },
+        scales: {
+            y: { min: minValue, max: maxValue+1 }
+        }
+    });
+
+    function updateEVGraphs(alpha) {
+        var ev_down = (alpha * {{ x1_l }} + (1 - alpha) * {{ x2_h }}).toFixed(2);
+        var ev_up = (alpha * {{ x1_h }} + (1 - alpha) * {{ x2_l }}).toFixed(2);
+        ev_chart.data.datasets[0].data = [parseFloat(ev_down), parseFloat(ev_up)];
+        ev_chart.update();
+    }
+
+    updateEVGraphs(0.5);
+
+    alphaSlider.addEventListener('input', function() {
+        updateAlphaFromSlider(this.value);
+        validateAlpha();
+    });
+
+    alphaInput.addEventListener('input', function() {
+        validateAlpha();
+    });
+
+    // Form submission handler
+    document.querySelector('form').addEventListener('submit', function(event) {
+        if (!validateAlpha()) {
+            event.preventDefault();
+            showError("Please choose a number between 0.01 and 1 before submitting.");
+        }
+    });
+    validateAlpha();
+
+
+</script>
+{% endblock %}

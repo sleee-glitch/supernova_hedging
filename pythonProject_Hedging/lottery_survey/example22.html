@@ -1,0 +1,30 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+    Investment Allocation:
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Initial instructions -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-12">
+<ul style="font-size: 1.25rem; line-height: 1.5;">
+
+    <li>Use the slider to make your allocation:</li>
+    <ul>
+        <li> Moving the slider adjusts your allocation to Investment 1.</li>
+        <li> The remaining amount is automatically allocated to Investment 2.</li>
+        <li> You can invest between $0.01 and $1 in Investment 1.</li>
+        <li> For example, selecting 0.8 means investing $0.8 in Investment 1 and $0.2 in Investment 2</li>
+    </ul>
+    <div class="row mt-4">
+        <div class="col-md-12">
+            {% next_button %}
+        </div>
+    </div>
+     </div>
+    </div>
+     </div>
+{% endblock %}

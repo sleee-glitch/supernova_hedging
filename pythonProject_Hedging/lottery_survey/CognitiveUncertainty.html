@@ -1,0 +1,144 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+    Certainty Question - Round {{ round_number }} of {{ num_rounds }}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <p>With probability of <strong>{{ p }}%</strong>:
+                        Investment 1 yields ${{ x1_l }}, while Investment 2 yields ${{ x2_h }}.
+                    </p>
+                    <p>With probability of <strong>{{ one_minus_p }}%</strong>:
+                        Investment 1 yields ${{ x1_h }}, while Investment 2 yields ${{ x2_l }}.
+                    </p>
+                  <div style="font-size: 1.2rem; padding-left: 15px;">
+                        <p>Your decision on the previous screen indicates that your allocation was:</p>
+                        <ul style="list-style-type: disc;">
+                            <li>Investment 1: <strong> ${{ player.alpha }}</strong></li>
+                            <li>Investment 2: <strong> ${{ investment_2_amount }}</strong></li>
+                        </ul>
+                    </div>
+                </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <p>On a scale from 0% to 100%, how certain are you that your current allocation maximizes your earning?</p>
+
+                    <div class="form-group">
+                        <label for="certainty_value" style="font-size: 1.2em; display: block; margin-bottom: 10px;">
+                            <strong>Certainty Level:</strong> <span id="certainty_value">Select a value</span>
+                        </label>
+
+                        <!-- Hidden input to store the selected certainty value -->
+                        <input type="hidden" id="certainty_input" name="certainty" value="">
+
+                        <!-- Button grid for certainty selection -->
+                        <div class="certainty-buttons text-center">
+                            <div class="row mb-2">
+                                <div class="col-12">
+                                    <div class="d-flex justify-content-between">
+                                        <span><strong>Very Uncertain</strong></span>
+                                        <span><strong>Completely Certain</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Small circular buttons in a single row -->
+                            <div class="d-flex justify-content-center flex-wrap gap-2">
+                                <!-- Buttons -->
+                                <button type="button" class="btn btn-outline-primary certainty-btn btn-sm" data-value="0" onclick="selectCertainty(0)">0%</button>
+                                <button type="button" class="btn btn-outline-primary certainty-btn btn-sm" data-value="5" onclick="selectCertainty(5)">5%</button>
+                                <button type="button" class="btn btn-outline-primary certainty-btn btn-sm" data-value="10" onclick="selectCertainty(10)">10%</button>
+                                <button type="button" class="btn btn-outline-primary certainty-btn btn-sm" data-value="15" onclick="selectCertainty(15)">15%</button>
+                                <button type="button" class="btn btn-outline-primary certainty-btn btn-sm" data-value="20" onclick="selectCertainty(20)">20%</button>
+                                <button type="button" class="btn btn-outline-primary certainty-btn btn-sm" data-value="25" onclick="selectCertainty(25)">25%</button>
+                                <button type="button" class="btn btn-outline-primary certainty-btn btn-sm" data-value="30" onclick="selectCertainty(30)">30%</button>
+                                <button type="button" class="btn btn-outline-primary certainty-btn btn-sm" data-value="35" onclick="selectCertainty(35)">35%</button>
+                                <button type="button" class="btn btn-outline-primary certainty-btn btn-sm" data-value="40" onclick="selectCertainty(40)">40%</button>
+                                <button type="button" class="btn btn-outline-primary certainty-btn btn-sm" data-value="45" onclick="selectCertainty(45)">45%</button>
+                                <button type="button" class="btn btn-outline-primary certainty-btn btn-sm" data-value="50" onclick="selectCertainty(50)">50%</button>
+                                <button type="button" class="btn btn-outline-primary certainty-btn btn-sm" data-value="55" onclick="selectCertainty(55)">55%</button>
+                                <button type="button" class="btn btn-outline-primary certainty-btn btn-sm" data-value="60" onclick="selectCertainty(60)">60%</button>
+                                <button type="button" class="btn btn-outline-primary certainty-btn btn-sm" data-value="65" onclick="selectCertainty(65)">65%</button>
+                                <button type="button" class="btn btn-outline-primary certainty-btn btn-sm" data-value="70" onclick="selectCertainty(70)">70%</button>
+                                <button type="button" class="btn btn-outline-primary certainty-btn btn-sm" data-value="75" onclick="selectCertainty(75)">75%</button>
+                                <button type="button" class="btn btn-outline-primary certainty-btn btn-sm" data-value="80" onclick="selectCertainty(80)">80%</button>
+                                <button type="button" class="btn btn-outline-primary certainty-btn btn-sm" data-value="85" onclick="selectCertainty(85)">85%</button>
+                                <button type="button" class="btn btn-outline-primary certainty-btn btn-sm" data-value="90" onclick="selectCertainty(90)">90%</button>
+                                <button type="button" class="btn btn-outline-primary certainty-btn btn-sm" data-value="95" onclick="selectCertainty(95)">95%</button>
+                                <button type="button" class="btn btn-outline-primary certainty-btn btn-sm" data-value="100" onclick="selectCertainty(100)">100%</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-12 text-center">
+            {% next_button %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function selectCertainty(value) {
+        // Update the hidden input value
+        document.getElementById('certainty_input').value = value;
+
+        // Update the displayed value
+        document.getElementById('certainty_value').textContent = value + '%';
+
+        // Remove active class from all buttons
+        const buttons = document.querySelectorAll('.certainty-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+
+        // Add active class to the selected button
+        document.querySelector(`.certainty-btn[data-value="${value}"]`).classList.add('active');
+    }
+
+    // No initialization to select any button by default
+    // The user must make an explicit selection
+</script>
+
+<!-- Custom CSS to style the layout -->
+<style>
+    .certainty-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .certainty-item span {
+        font-size: 12px; /* Smaller font for percentages */
+        margin-bottom: 2px;
+    }
+
+    .certainty-btn {
+        width: 30px; /* Make buttons smaller */
+        height: 30px;
+        border-radius: 50%; /* Circular shape */
+        font-size: 10px; /* Smaller text */
+        text-align: center;
+        padding: 0;
+    }
+
+    .certainty-buttons .d-flex {
+        overflow-x: auto; /* Allow horizontal scrolling if needed */
+        white-space: nowrap;
+    }
+</style>
+
+{% endblock %}

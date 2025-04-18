@@ -1,0 +1,43 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+   Example 3: Potential Outcome
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Initial instructions -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-12">
+<ul style="font-size: 1.25rem; line-height: 1.5;">
+
+                <li>Your choice of money allocation determines your <span class="text-primary font-weight-bold">potential outcome</span>.</li>
+                <li>The interactive graph below shows how your allocation choices affect your potential returns.</li>
+                        <li>The actual outcome will depend on whether Possibility A or Possibility B occurs.</li>
+                    <li>The chances of Possibility A and Possibility B occurring (shown on the previous page) are fixed and separate from this calculation.</li>
+
+                <li>You should consider both your potential outcomes and the separate probabilities of each possibility when making your decision.</li>
+            </ul>
+    <div class="col-md-7 text-center">
+            <img src="{% static 'images/potentialoutcome.png' %}"
+                 alt="Probability Chart"
+                 class="img-fluid"
+                 style="max-height: 400px;">
+        </div>
+
+        </ul>
+    </div>
+</div>
+
+
+<div class="row justify-content-left mt-4">
+    <div class="col-md-12 text-left">
+        {% next_button %}
+    </div>
+</div>
+
+</div>
+{% endblock %}
+
+

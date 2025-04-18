@@ -1,0 +1,35 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+Summary: Calculation of Potential Outcome
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+
+
+        <p>Suppose you allocate 0.8 in Apple and 0.2 in Banana.</p>
+
+        <div class="mt-3">
+            <span class="text-muted">With 50% chance:</span><br>
+            <span class="text-success"> 0.8 × Apple poor (-10)</span> +
+            <span class="text-danger"> 0.2 × Banana well (10)</span> = -6
+        </div>
+
+        <div class="mt-2">
+            <span class="text-muted">With 50% chance:</span><br>
+            <span class="text-success"> 0.8 × Apple well (10)</span> +
+            <span class="text-danger"> 0.2 × Banana poor (-10)</span> = 6
+        </div>
+
+        <div class="mt-3">
+            <p><strong>Your final payment is determined by applying probability to your potential outcome:</strong> <br>
+            50% × (-6) + 50% × (6) = <strong>0</strong></p>
+        </div>
+    </div>
+</div>
+
+{% next_button %}
+{% endblock %}

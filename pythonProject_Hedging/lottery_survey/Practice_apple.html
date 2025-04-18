@@ -1,0 +1,262 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+    Example
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-12">
+            <p>This is a practice round to help you understand the task. Your choices here will not affect your earnings.</p>
+            <p>Please select how much of your money you want to allocate to L1. The remaining portion will automatically be allocated to L2.</p>
+            <p>Experiment with the slider to observe how your allocation affects potential outcomes.</p>
+            <p>Please note: The actual experiment will use monetary values instead of fruits.</p>
+            <ul>
+                <li><strong>Lottery 1 (L1)</strong>: With probability <strong>{{ p }}</strong>, you get an <strong>Apple</strong>, and with probability <strong>{{ one_minus_p }}</strong>, you get a <strong>Banana</strong>.</li>
+                <li><strong>Lottery 2 (L2)</strong>: With probability <strong>{{ p }}</strong>, you get a <strong>Strawberry</strong>, and with probability <strong>{{ one_minus_p }}</strong>, you get a <strong>Blueberry</strong>.</li>
+
+          <p>Try adjusting the slider to see how your allocation affects the outcome.</p>
+
+            </ul>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-3">
+                <div style="height: 250px; width: 100%;">
+                   <img src="{{ static 'images/appplebanana.png' }}" alt="Apple and Banana" style="max-width: 100%; max-height: 250px;">
+                    <p class="text-center mt-2"><strong>L1: Apple & Banana</strong></p>
+                </div>
+            </div>
+      <div class="col-md-5">
+    <div class="d-flex flex-column justify-content-center mt-4">
+        <label for="alpha_slider">Choose your portion for L1.</label>
+        <input type="range" min="0.01" max="1" step="0.01" id="alpha_slider" value="0.5" oninput="updateAlphaFromSlider(this.value)" style="width: 100%;">
+        <div class="d-flex justify-content-between mt-2" style="font-size: 0.7em;">
+            <span>1</span>
+            <span>0.9</span>
+            <span>0.8</span>
+            <span>0.7</span>
+            <span>0.6</span>
+            <span>0.5</span>
+            <span>0.4</span>
+            <span>0.3</span>
+            <span>0.2</span>
+            <span>0.01</span>
+        </div>
+        <div class="mt-3">
+            <input type="number" id="alpha_input" min="0.01" max="1" step="0.01" oninput="validateAlpha()">
+        </div>
+        <div id="error_message" class="text-danger mt-2" style="display: none;"></div>
+        <input type="hidden" name="alpha" id="id_alpha" value="">
+    </div>
+</div>
+
+            <div class="col-md-3">
+                <div style="height: 250px; width: 100%;">
+                   <img src="{{ static 'images/berries.png' }}" alt="Strawberry and Blueberry" style="max-width: 100%; max-height: 250px;">
+                    <p class="text-center mt-2"><strong>L2: Strawberry & Blueberry</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+<div class="row justify-content-center mt-4">
+    <div class="col-md-5">
+        <div style="height: 250px; width: 100%;">
+            <canvas id="probability_pie"></canvas>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div id="combined_outcome" style="text-align: center;">
+            <h5>Expected Outcome Based on Your Choice</h5>
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="outcome-container" style="width: 45%;">
+                    <img id="applestr_image" src="{{ static 'images/istockphoto-524721375-612x612.jpg' }}" alt="Apple-Strawberry Smoothie with Probability of 0.6" style="max-width: 100%; max-height: 150px; transition: all 0.3s ease;">
+                    <p class="mt-2"> __alpha__ Apple, __1-alpha__ Strawberry  with Probability of 0.6</p>
+                </div>
+                <div class="outcome-container" style="width: 45%;">
+                    <img id="bananaberry_image" src="{{ static 'images/BLUEBERRY-BANANA-FLAVOR.jpg' }}" alt="Banana-Blueberry Smoothie with Probability of 0.4" style="max-width: 100%; max-height: 150px; transition: all 0.3s ease;">
+                    <p class="mt-2"> __alpha__  Banana __1-alpha__  Blueberry with Probability of 0.4</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="row justify-content-left mt-4">
+    <div class="col-md-12 text-left">
+        {% next_button %}
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+<script>
+    Chart.register(ChartDataLabels);
+    var softBlue = '#4682B4';
+    var mutedOrange = '#D2691E';
+
+    function updateAlphaFromSlider(value) {
+        var roundedValue = parseFloat(value).toFixed(1);
+        document.getElementById('alpha_slider').value = roundedValue;
+        document.getElementById('id_alpha').value = roundedValue;
+        document.getElementById('alpha_input').value = roundedValue;
+        updateEVGraphs(parseFloat(roundedValue));
+        validateAlpha();
+    }
+
+   function validateAlpha() {
+        var sliderValue = parseFloat(document.getElementById('alpha_slider').value);
+        var inputValue = parseFloat(document.getElementById('alpha_input').value || 0);
+        var errorMessage = document.getElementById('error_message');
+        var nextButton = document.querySelector('.otree-btn-next');
+
+        if (isNaN(inputValue) || inputValue < 0.1 || inputValue > 1) {
+            showError("");
+            nextButton.disabled = true;
+            return false;
+        } else if (Math.abs(sliderValue - inputValue) > 0.001) {
+            showError("The slider value and input value must match.");
+            nextButton.disabled = true;
+            return false;
+        } else {
+            errorMessage.style.display = 'none';
+            document.getElementById('id_alpha').value = sliderValue.toFixed(1);
+            nextButton.disabled = false;
+            return true;
+        }
+    }
+
+    function showError(message) {
+        var errorMessage = document.getElementById('error_message');
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        document.querySelector('.otree-btn-next').disabled = true;
+    }
+
+    var alphaSlider = document.getElementById('alpha_slider');
+    var alphaInput = document.getElementById('alpha_input');
+    var hiddenAlphaInput = document.getElementById('id_alpha');
+    alphaSlider.value = 0.5;
+    alphaInput.value = '';
+    hiddenAlphaInput.value = 0.5;
+    hiddenAlphaInput.style.display = 'none';
+
+    function createChart(ctx, type, data, options) {
+        return new Chart(ctx, {
+            type: type,
+            data: data,
+            options: Object.assign({
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    datalabels: {
+                        color: '#000',
+                        font: {
+                            weight: 'bold'
+                        },
+                        formatter: function(value) {
+                            return value;
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            callback: function(value, index) {
+                                return index === 0 ? 'p' : '1-p';
+                            }
+                        }
+                    }
+                }
+            }, options)
+        });
+    }
+
+    var pie_chart = createChart(document.getElementById('probability_pie').getContext('2d'), 'pie', {
+        labels: ['p', '1-p'],
+        datasets: [{
+            data: [{{ p }}, {{ one_minus_p }}],
+            backgroundColor: [softBlue, mutedOrange],
+            borderWidth: 0
+        }]
+    }, {
+        plugins: {
+            title: { display: true, text: 'Probabilities of Outcome' },
+            legend: { display: false, position: 'bottom' },
+            datalabels: {
+                color: '#fff',
+                font: {
+                    weight: 'bold'
+                },
+                formatter: function(value, context) {
+                    return context.chart.data.labels[context.dataIndex] + ': ' + parseFloat(value).toFixed(2);
+                }
+            }
+        }
+    });
+
+    var ev_chart = createChart(document.getElementById('ev_graphs').getContext('2d'), 'bar', {
+        labels: ['p', '1-p'],
+        datasets: [{
+            data: ['', ''],
+            backgroundColor: [softBlue, mutedOrange],
+            barPercentage: 0.5,
+            categoryPercentage: 1.0
+        }]
+    }, {
+        plugins: {
+            title: { display: true, text: 'Combined Potential Outcome Based on Your Choice' },
+            legend: { display: false, text: 'Potential Outcome' },
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+            }
+        },
+        scales: {
+            y: {
+                type: 'category',
+                labels: ['Apple', 'Banana', 'Strawberry', 'Blueberry']
+            }
+        }
+    });
+
+
+    function updateAlphaFromSlider(value) {
+        var roundedValue = parseFloat(value).toFixed(1);
+        document.getElementById('alpha_slider').value = roundedValue;
+        document.getElementById('id_alpha').value = roundedValue;
+        document.getElementById('alpha_input').value = roundedValue;
+        updateCombinedOutcome(parseFloat(roundedValue));
+        validateAlpha();
+    }
+
+    updateEVGraphs(0.5);
+
+    alphaSlider.addEventListener('input', function() {
+        updateAlphaFromSlider(this.value);
+        validateAlpha();
+    });
+
+    alphaInput.addEventListener('input', function() {
+        validateAlpha();
+    });
+
+    // Form submission handler
+    document.querySelector('form').addEventListener('submit', function(event) {
+        if (!validateAlpha()) {
+            event.preventDefault();
+            showError("Please choose a number between 0.01 and 1 before submitting.");
+        }
+    });
+    validateAlpha();
+</script>
+{% endblock %}
