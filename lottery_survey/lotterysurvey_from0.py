@@ -31,7 +31,7 @@
 
  <div class="d-flex flex-column justify-content-center mt-4">
 <label for="alpha_slider" style="font-size: 0.9em;"> <strong>Select the amount to allocate to Investment 1.</strong>  </label>
-<input type="range" min="0" max="1" step="0.01" id="alpha_slider" oninput="updateAlphaFromSlider(this.value)" style="width: 100%;">  <div class="d-flex justify-content-between mt-2" style="font-size: 0.7em;">
+<input type="range" min="0.0" max="1" step="0.01" id="alpha_slider" oninput="updateAlphaFromSlider(this.value)" style="width: 100%;">  <div class="d-flex justify-content-between mt-2" style="font-size: 0.7em;">
    <span>$1</span>
     <span>$0.8</span>
     <span>$0.6</span>
@@ -42,7 +42,7 @@
 
        <div class="mt-3">
                     <label for="alpha_input"> Confirm your investment ($):</label>
-    <input type="number" id="alpha_input" min="0" max="1" step="0.01" oninput="validateAlpha()">
+    <input type="number" id="alpha_input" min="0.0" max="1" step="0.01" oninput="validateAlpha()">
   </div>
   <div id="error_message" class="text-danger mt-2" style="display: none;"></div>
   <input type="hidden" name="alpha" id="id_alpha">
@@ -119,66 +119,31 @@
 
 
 function updateAlphaFromSlider(value) {
-    var reversedValue = (1 - parseFloat(value)).toFixed(2);
-    var roundedValue = Math.max(0, Math.min(1, parseFloat(reversedValue)));
+    var reversedValue = (1.01 - parseFloat(value)).toFixed(2);
+    var roundedValue = Math.max(0.0, Math.min(1, parseFloat(reversedValue)));
     document.getElementById('alpha_slider').value = value; // Keep original value for slider??
     document.getElementById('id_alpha').value = roundedValue;
     document.getElementById('alpha_input').value = roundedValue;
     updateEVGraphs(roundedValue);
-    // Don't validate on page load
-    // validateAlpha();
+    validateAlpha();
 }
 
 function validateAlpha() {
-    // Get raw values first to check if they're empty
-    var sliderValueRaw = document.getElementById('alpha_slider').value;
-    var inputValueRaw = document.getElementById('alpha_input').value;
+    var sliderValue = parseFloat(document.getElementById('alpha_slider').value);
+    var reversedSliderValue = (1.01 - sliderValue).toFixed(2);
+    var inputValue = parseFloat(document.getElementById('alpha_input').value || 0);
     var errorMessage = document.getElementById('error_message');
     var nextButton = document.querySelector('.otree-btn-next');
 
-    // If both fields are empty (initial state), don't show an error
-    if (sliderValueRaw === "" && inputValueRaw === "") {
-        errorMessage.style.display = 'none';
+    if (isNaN(inputValue) || inputValue < 0.01 || inputValue > 1) {
+        showError("");
         nextButton.disabled = true;
         return false;
-    }
-
-    // Now parse values for actual validation
-    var sliderValue = parseFloat(sliderValueRaw);
-    var inputValue = parseFloat(inputValueRaw || 0);
-
-    // Handle case where input is filled but slider is not
-    if (inputValueRaw !== "" && sliderValueRaw === "") {
-        if (isNaN(inputValue) || inputValue < 0 || inputValue > 1) {
-            showError("Please enter a valid number between 0 and 1");
-        } else {
-            errorMessage.style.display = 'none';
-            document.getElementById('id_alpha').value = inputValue.toFixed(2);
-        }
-        nextButton.disabled = true;
-        return false;
-    }
-
-    // Handle case where slider is moved but input is empty
-    if (sliderValueRaw !== "" && inputValueRaw === "") {
-        errorMessage.style.display = 'none';
-        nextButton.disabled = true;
-        return false;
-    }
-
-    // Both have values - perform full validation
-    if (isNaN(inputValue) || inputValue < 0 || inputValue > 1) {
-        showError("Please enter a valid number between 0 and 1");
+    } else if (Math.abs(reversedSliderValue - inputValue) > 0.001) {
+        showError("The slider value and input value must match.");
         nextButton.disabled = true;
         return false;
     } else {
-        var reversedSliderValue = (1 - sliderValue).toFixed(2);
-        if (Math.abs(reversedSliderValue - inputValue) > 0.001) {
-            showError("The slider value and input value must match.");
-            nextButton.disabled = true;
-            return false;
-        }
-
         errorMessage.style.display = 'none';
         document.getElementById('id_alpha').value = inputValue.toFixed(2);
         nextButton.disabled = false;
@@ -186,16 +151,6 @@ function validateAlpha() {
     }
 }
 
-function showError(message) {
-    var errorMessage = document.getElementById('error_message');
-    if (message) {
-        errorMessage.textContent = message;
-        errorMessage.style.display = 'block';
-    } else {
-        errorMessage.textContent = '';
-        errorMessage.style.display = 'none';
-    }
-}
 
     var alphaSlider = document.getElementById('alpha_slider');
     var alphaInput = document.getElementById('alpha_input');
@@ -216,13 +171,12 @@ document.addEventListener("DOMContentLoaded", function() {
     var alphaInput = document.getElementById('alpha_input');
     var hiddenAlphaInput = document.getElementById('id_alpha');
     var nextButton = document.querySelector('.otree-btn-next');
-    var errorMessage = document.getElementById('error_message');
+    var errorMessage = document.getElementById('error_message'); // Assuming an error message element
 
-    // Ensure initial state is empty and error message is hidden
+    // Ensure initial state is empty
     alphaSlider.value = "";
     alphaInput.value = "";
     hiddenAlphaInput.value = "";
-    errorMessage.style.display = 'none';
     nextButton.disabled = true;
 
     function updateAlphaFromSlider(value) {
@@ -232,8 +186,8 @@ document.addEventListener("DOMContentLoaded", function() {
             nextButton.disabled = true;
             return;
         }
-        var reversedValue = (1 - parseFloat(value)).toFixed(2);
-        var roundedValue = Math.max(0, Math.min(1, parseFloat(reversedValue)));
+        var reversedValue = (1.01 - parseFloat(value)).toFixed(2);
+        var roundedValue = Math.max(0.0, Math.min(1, parseFloat(reversedValue)));
         alphaSlider.value = value;
         hiddenAlphaInput.value = roundedValue;
         alphaInput.value = roundedValue;
@@ -243,7 +197,7 @@ document.addEventListener("DOMContentLoaded", function() {
     function validateAlpha() {
         var inputValue = alphaInput.value ? parseFloat(alphaInput.value) : NaN;
 
-        if (isNaN(inputValue) || inputValue < 0 || inputValue > 1) {
+        if (isNaN(inputValue) || inputValue < 0.01 || inputValue > 1) {
             showError("Please select a valid value.");
             return false;
         } else {
@@ -271,8 +225,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
     alphaInput.addEventListener('input', function() {
         var value = parseFloat(this.value);
-        if (!isNaN(value) && value >= 0 && value <= 1) {
-            alphaSlider.value = (1 - value).toFixed(2);
+        if (!isNaN(value) && value >= 0.01 && value <= 1) {
+            alphaSlider.value = (1.01 - value).toFixed(2);
             updateAlphaFromSlider(alphaSlider.value);
         } else if (this.value === "") {
             alphaSlider.value = "";
@@ -439,7 +393,7 @@ function updateEVGraphs(alpha) {
     document.querySelector('form').addEventListener('submit', function(event) {
         if (!validateAlpha()) {
             event.preventDefault();
-            showError("Please choose a number between 0 and 1 before submitting.");
+            showError("Please choose a number between 0.0 and 1 before submitting.");
         }
     });
     validateAlpha();
